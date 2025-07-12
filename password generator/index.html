@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Password Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: #1f1f1f;
+      padding: 30px;
+      border-radius: 12px;
+      width: 300px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+    }
+
+    .options label {
+      display: block;
+      margin: 8px 0;
+    }
+
+    .output {
+      background: #333;
+      padding: 10px;
+      border-radius: 8px;
+      margin: 15px 0;
+      text-align: center;
+      font-weight: bold;
+      letter-spacing: 1px;
+      word-break: break-all;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      background: #00b894;
+      color: white;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #019475;
+    }
+
+    .length-value {
+      float: right;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Password Generator</h2>
+    <label>Password Length: <span class="length-value" id="lengthValue">12</span></label>
+    <input type="range" id="lengthSlider" min="4" max="32" value="12" />
+
+    <div class="options">
+      <label><input type="checkbox" id="uppercase" checked /> Include Uppercase</label>
+      <label><input type="checkbox" id="lowercase" checked /> Include Lowercase</label>
+      <label><input type="checkbox" id="numbers" checked /> Include Numbers</label>
+      <label><input type="checkbox" id="symbols" /> Include Symbols</label>
+    </div>
+
+    <div class="output" id="passwordOutput">YourPassword123</div>
+    <button onclick="generatePassword()">Generate Password</button>
+    <button onclick="copyPassword()" style="margin-top: 10px;">Copy to Clipboard</button>
+  </div>
+
+  <script>
+    const lengthSlider = document.getElementById("lengthSlider");
+    const lengthValue = document.getElementById("lengthValue");
+    const passwordOutput = document.getElementById("passwordOutput");
+
+    const uppercaseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const lowercaseChars = "abcdefghijklmnopqrstuvwxyz";
+    const numberChars = "0123456789";
+    const symbolChars = "!@#$%^&*()_+-=[]{}|;:,.<>?";
+
+    lengthSlider.oninput = () => {
+      lengthValue.textContent = lengthSlider.value;
+    };
+
+    function generatePassword() {
+      const length = +lengthSlider.value;
+      const includeUpper = document.getElementById("uppercase").checked;
+      const includeLower = document.getElementById("lowercase").checked;
+      const includeNumbers = document.getElementById("numbers").checked;
+      const includeSymbols = document.getElementById("symbols").checked;
+
+      let charSet = "";
+      if (includeUpper) charSet += uppercaseChars;
+      if (includeLower) charSet += lowercaseChars;
+      if (includeNumbers) charSet += numberChars;
+      if (includeSymbols) charSet += symbolChars;
+
+      if (charSet === "") {
+        passwordOutput.textContent = "Please select at least one option!";
+        return;
+      }
+
+      let password = "";
+      for (let i = 0; i < length; i++) {
+        const randomIndex = Math.floor(Math.random() * charSet.length);
+        password += charSet[randomIndex];
+      }
+
+      passwordOutput.textContent = password;
+    }
+
+    function copyPassword() {
+      const temp = document.createElement("textarea");
+      temp.value = passwordOutput.textContent;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand("copy");
+      document.body.removeChild(temp);
+      alert("Password copied to clipboard!");
+    }
+
+    // Generate one by default
+    generatePassword();
+  </script>
+</body>
+</html>
