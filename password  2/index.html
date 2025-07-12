@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Advanced Password Generator</title>
+  <style>
+    :root {
+      --bg-color: #121212;
+      --text-color: #fff;
+      --card-color: #1f1f1f;
+      --button-color: #00b894;
+    }
+
+    .light-theme {
+      --bg-color: #f5f5f5;
+      --text-color: #111;
+      --card-color: #fff;
+      --button-color: #007bff;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+      background: var(--card-color);
+      padding: 30px;
+      border-radius: 12px;
+      width: 380px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.5);
+      transition: background 0.3s;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .output {
+      background: #333;
+      color: #fff;
+      padding: 10px;
+      border-radius: 8px;
+      margin: 15px 0;
+      text-align: center;
+      font-weight: bold;
+      word-break: break-all;
+    }
+
+    .strength {
+      text-align: center;
+      margin-top: 5px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      background: var(--button-color);
+      color: white;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      border: none;
+    }
+
+    .theme-toggle button {
+      background: transparent;
+      color: var(--text-color);
+      border: 1px solid var(--text-color);
+      width: auto;
+      padding: 5px 10px;
+      margin-top: 10px;
+    }
+
+    .history {
+      margin-top: 20px;
+    }
+
+    .history h3 {
+      margin-bottom: 10px;
+      text-align: center;
+    }
+
+    .history-item {
+      background: #333;
+      color: #fff;
+      padding: 5px 10px;
+      margin: 5px 0;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      word-break: break-all;
+    }
+
+    .history-item button {
+      width: auto;
+      padding: 5px 8px;
+      font-size: 12px;
+      margin-left: 5px;
+      background: var(--button-color);
+    }
+
+    .history-controls {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      gap: 10px;
+    }
+
+    .history-controls button {
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Advanced Password Generator</h2>
+    <input type="text" id="nameInput" placeholder="Enter your name"/>
+    <button onclick="generateNameBasedPassword()">Generate Password</button>
+    <div class="output" id="passwordOutput">YourStrongPassword</div>
+    <div class="strength" id="strength">Strength: </div>
+    <button onclick="copyPassword()">Copy to Clipboard</button>
+    <div class="theme-toggle">
+      <button onclick="toggleTheme()">Toggle Theme</button>
+    </div>
+    <div class="history" id="history">
+      <h3>Saved Passwords</h3>
+      <div id="historyList"></div>
+      <div class="history-controls">
+        <button onclick="clearHistory()">Clear History</button>
+        <button onclick="exportHistory()">Export</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const passwordOutput = document.getElementById("passwordOutput");
+    const strength = document.getElementById("strength");
+    const historyList = document.getElementById("historyList");
+    let currentTheme = "dark";
+
+    function generateNameBasedPassword() {
+      const name = document.getElementById("nameInput").value.trim();
+      if (!name) {
+        passwordOutput.textContent = "Please enter a name!";
+        strength.textContent = "";
+        return;
+      }
+
+      const symbols = "!@#$%^&*";
+      const numbers = "0123456789";
+
+      let strengthened = "";
+
+      for (let c of name) {
+        strengthened += Math.random() < 0.5 ? c.toUpperCase() : c.toLowerCase();
+      }
+
+      for (let i = 0; i < 3; i++) {
+        strengthened += numbers[Math.floor(Math.random() * numbers.length)];
+        strengthened += symbols[Math.floor(Math.random() * symbols.length)];
+      }
+
+      const shuffled = strengthened
+        .split("")
+        .sort(() => 0.5 - Math.random())
+        .join("");
+
+      passwordOutput.textContent = shuffled;
+
+      evaluateStrength(shuffled);
+      savePassword(shuffled);
+    }
+
+    function copyPassword() {
+      copyText(passwordOutput.textContent);
+    }
+
+    function copyText(text) {
+      const temp = document.createElement("textarea");
+      temp.value = text;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand("copy");
+      document.body.removeChild(temp);
+      alert("Copied to clipboard!");
+    }
+
+    function evaluateStrength(password) {
+      let score = 0;
+      if (password.length >= 8) score++;
+      if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score++;
+      if (/[0-9]/.test(password)) score++;
+      if (/[!@#$%^&*]/.test(password)) score++;
+
+      if (score <= 2) {
+        strength.textContent = "Strength: Weak";
+        strength.style.color = "red";
+      } else if (score === 3) {
+        strength.textContent = "Strength: Medium";
+        strength.style.color = "orange";
+      } else {
+        strength.textContent = "Strength: Strong";
+        strength.style.color = "green";
+      }
+    }
+
+    function toggleTheme() {
+      if (currentTheme === "dark") {
+        document.body.classList.add("light-theme");
+        currentTheme = "light";
+      } else {
+        document.body.classList.remove("light-theme");
+        currentTheme = "dark";
+      }
+    }
+
+    function savePassword(password) {
+      let saved = JSON.parse(localStorage.getItem("passwordHistory")) || [];
+      saved.unshift(password); // add to front
+      saved = saved.slice(0, 10); // keep only last 10
+      localStorage.setItem("passwordHistory", JSON.stringify(saved));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const saved = JSON.parse(localStorage.getItem("passwordHistory")) || [];
+      historyList.innerHTML = "";
+      saved.forEach((p) => {
+        const item = document.createElement("div");
+        item.className = "history-item";
+        item.innerHTML = `
+          <span>${p}</span>
+          <button onclick="copyText('${p}')">Copy</button>
+        `;
+        historyList.appendChild(item);
+      });
+    }
+
+    function clearHistory() {
+      if (confirm("Are you sure you want to clear all saved passwords?")) {
+        localStorage.removeItem("passwordHistory");
+        renderHistory();
+      }
+    } 
+
+    function exportHistory() {
+      const saved = JSON.parse(localStorage.getItem("passwordHistory")) || [];
+      if (saved.length === 0) {
+        alert("No saved passwords to export!");
+        return;
+      }
+      const textBlob = new Blob([saved.join("\n")], {type: "text/plain"});
+      const url = URL.createObjectURL(textBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "password_history.txt";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    }
+
+    // render history on page load
+    renderHistory();
+  </script>
+</body>
+</html>
